@@ -16,6 +16,9 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
+Route::post('/password/email', [\App\Http\Controllers\API\ForgotPasswordController::class, 'forgotPassword']);
+Route::post('/password/code/check', [\App\Http\Controllers\API\CodeCheckController::class, 'checkCode']);
+Route::post('/password/reset', [\App\Http\Controllers\API\ResetPasswordController::class, 'resetPassword']);
 
 Route::controller(RegisterController::class)->group(function(){
     Route::post('register', 'register');
