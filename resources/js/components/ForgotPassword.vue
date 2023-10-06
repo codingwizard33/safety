@@ -1,12 +1,13 @@
 <template>
-    <div class="container-fluid py-1 h-100">
-        <div class="row d-flex justify-content-center align-items-center h-100">
-            <div class="col">
-                <div class="card card-forgot_password my-2">
+    <div class="container-fluid px-0 h-100">
+        <div class="row d-flex justify-content-center align-items-center h-100 w-100">
+            <div class="col px-0">
+                <div class="card card-forgot_password my-0">
                     <div class="row d-flex justify-content-end forgot_password">
                         <div class="form-forgot_password">
                             <div class="d-flex justify-content-center align-items-center h-100">
-                                <div class="card-body_forgot_password">
+
+                                <div v-if="forgetPage && !codePage" class="card-body_forgot_password">
                                     <h3 class="mb-5 text">Forgot password</h3>
                                     <div class="form-outline mb-4">
                                         <label class="form-label" for="email">Email</label>
@@ -14,11 +15,46 @@
                                         <small class="text-danger error mt-1" v-if="errors && errors.email">{{ errors.email[0] }}</small>
                                     </div>
                                     <div class="pt-3">
-                                        <button type="button" :disabled="processing" @click="login"  class="btn btn-success">
+                                        <button type="button" :disabled="processing" @click="sendForgotEmail()"  class="btn btn-success">
                                             {{ processing ? "Please wait" : "Send" }}
                                         </button>
                                     </div>
                                 </div>
+
+                                <div v-else-if="!forgetPage && codePage" class="card-body_forgot_password">
+                                    <h3 class="mb-5 text">Reset Code</h3>
+                                    <div class="form-outline mb-4">
+                                        <label class="form-label" for="code">Code</label>
+                                        <input type="email" id="code"  v-model="reset.code"  class="form-control" />
+                                        <small class="text-danger error mt-1" v-if="errors && errors.email">{{ errors.email[0] }}</small>
+                                    </div>
+                                    <div class="pt-3">
+                                        <button type="button" :disabled="processing" @click="sendResetCode()"  class="btn btn-success">
+                                            {{ processing ? "Please wait" : "Send Code" }}
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div v-else class="card-body_forgot_password">
+                                    <h3 class="mb-5 text">Reset Password</h3>
+                                    <div class="form-outline mb-4">
+                                        <label class="form-label" for="new_password">New Password</label>
+                                        <input type="password" id="new_password"  v-model="newPasswordData.password"  class="form-control" />
+                                        <small class="text-danger error mt-1" v-if="errors && errors.email">{{ errors.email[0] }}</small>
+                                    </div>
+                                    <div class="form-outline mb-4">
+                                        <label class="form-label" for="confirm_password">Confirm Password</label>
+                                        <input type="password" id="confirm_password"  v-model="newPasswordData.c_password"  class="form-control" />
+                                        <small class="text-danger error mt-1" v-if="errors && errors.email">{{ errors.email[0] }}</small>
+                                    </div>
+                                    <div class="pt-3">
+                                        <button type="button" :disabled="processing" @click="resetPassword()"  class="btn btn-success">
+                                            {{ processing ? "Please wait" : "Reset" }}
+                                        </button>
+                                    </div>
+                                </div>
+
+
                             </div>
                         </div>
                     </div>
@@ -35,29 +71,73 @@
         data(){
             return {
                 auth:{
-                    email:"",
+                    email: "",
+                },
+                reset: {
+                    code: null
+                },
+                newPasswordData: {
+                    code: null,
+                    password: null,
+                    c_password: null,
                 },
                 errorEmail: null,
-                processing:false,
+                processing: false,
                 errors: null,
+                reset_code: null,
+                forgetPage: true,
+                codePage: false,
             }
         },
         methods:{
             ...mapActions({
                 signIn:'auth/login'
             }),
-            async login(){
+            async sendForgotEmail(){
                 this.errors = null;
                 this.processing = true;
-                await axios.get('/sanctum/csrf-cookie');
-                await axios.post('api/login',this.auth).then(({data})=>{
-                    this.signIn()
+                await axios.post('/api/password/email', this.auth).then(({data})=>{
+                    if(data.code) {
+                        this.forgetPage = false
+                        this.codePage = true
+                    }
+                    // this.signIn()
                 }).catch(({response:{data}})=>{
-                    this.errors = data.data;
+                    this.errors = data.errors;
                 }).finally(()=>{
                     this.processing = false
                 })
             },
+            async sendResetCode() {
+                this.errors = null;
+                this.processing = true;
+                await axios.post('/api/password/code/check', this.reset).then(({data})=>{
+                    if(data.message == 'Code confirmed') {
+                        this.forgetPage = false
+                        this.codePage = false
+                    }
+                    // this.signIn()
+                }).catch(({response:{data}})=>{
+                    this.errors = data.errors;
+                }).finally(()=>{
+                    this.processing = false
+                })
+            },
+            async resetPassword() {
+                this.newPasswordData.code = this.reset.code
+                this.errors = null;
+                this.processing = true;
+                await axios.post('/api/password/reset', this.newPasswordData).then(({data})=>{
+                    if(data.message) {
+                        this.$router.push('/login')
+                    }
+                    // this.signIn()
+                }).catch(({response:{data}})=>{
+                    this.errors = data.errors;
+                }).finally(()=>{
+                    this.processing = false
+                })
+            }
         },
         mounted() {
             document.title = "Forgot Password"
@@ -73,7 +153,7 @@
         background-repeat: no-repeat;
         background-size: contain;
         height: 100%;
-        max-height: 927px;
+        max-height: 930px;
         border: none;
 
         .forgot_password {
@@ -82,7 +162,7 @@
                 background: #FFF;
                 width: 100%;
                 max-width: 1124px;
-                height: 927px;
+                height: 930px;
                 .card-body_forgot_password {
                     width: 100%;
                     max-width: 588px;
@@ -167,7 +247,7 @@
 
     @media screen and (min-width: 1755px) and (max-width: 1940px)   {
         .form-forgot_password {
-            max-width: 950px !important;
+            max-width: 970px !important;
         }
     }
 

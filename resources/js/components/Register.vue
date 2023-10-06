@@ -1,8 +1,8 @@
 <template>
-    <div class="container-fluid py-1 h-100">
-        <div class="row d-flex justify-content-center align-items-center h-100">
-            <div class="col">
-                <div class="card card-registration my-2">
+    <div class="container-fluid px-0 h-100">
+        <div class="row d-flex justify-content-center align-items-center w-100 h-100">
+            <div class="col px-0">
+                <div class="card card-registration my-0">
                     <div class="row d-flex justify-content-end sign_up">
                         <div class="form-sign_up">
                             <div class="d-flex justify-content-center h-100">
@@ -109,7 +109,7 @@
         background-repeat: no-repeat;
         background-size: contain;
         height: 100%;
-        max-height: 927px;
+        max-height: 930px;
         border: none;
 
 
@@ -119,7 +119,7 @@
                 background: #FFF;
                 width: 100%;
                 max-width: 1124px;
-                height: 927px;
+                height: 930px;
                 .card-body_sign_up {
                     width: 100%;
                     max-width: 588px;
